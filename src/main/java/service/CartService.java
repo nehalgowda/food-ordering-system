@@ -5,43 +5,80 @@ import model.MenuItem;
 import exceptions.InvalidQuantityException;
 /* Handles adding, removing and updating cart items. */
 public class CartService {
-    private ArrayList<CartItem> cart = new ArrayList<>();
+    private final ArrayList<CartItem> cart = new ArrayList<>();
+    private CartItem findCartItemById(int id) {
+    for (CartItem item : cart) {
+        if (item.getItem().getId() == id) {
+            return item;
+        }
+    }
+    return null;
+}
     public void addItem(MenuItem item, int quantity) throws InvalidQuantityException {
-        if (quantity <= 0) throw new InvalidQuantityException("Quantity must be greater than zero.");
-        for (CartItem cartItem : cart) {
-            if (cartItem.getItem().getId() == item.getId()) {
-                cartItem.setQuantity(cartItem.getQuantity() + quantity);
-                System.out.println("Quantity updated in cart."); return;
-            }
-        }
-        cart.add(new CartItem(item, quantity));
-        System.out.println("Item added to cart.");
+    if (quantity <= 0) {
+        throw new InvalidQuantityException("Quantity must be greater than zero.");
     }
+
+    CartItem existingItem = findCartItemById(item.getId());
+
+    if (existingItem != null) {
+        existingItem.setQuantity(existingItem.getQuantity() + quantity);
+        System.out.println("Quantity updated in cart.");
+        return;
+    }
+
+    cart.add(new CartItem(item, quantity));
+    System.out.println("Item added to cart.");
+}
     public void removeItem(int id) {
-        for (int i = 0; i < cart.size(); i++) {
-            if (cart.get(i).getItem().getId() == id) {
-                cart.remove(i); System.out.println("Item removed."); return;
-            }
-        }
-        System.out.println("Item is not in the cart.");
+    CartItem item = findCartItemById(id);
+
+    if (item != null) {
+        cart.remove(item);
+        System.out.println("Item removed.");
+        return;
     }
+
+    System.out.println("Item is not in the cart.");
+}
     public void updateQuantity(int id, int quantity) throws InvalidQuantityException {
-        if (quantity <= 0) throw new InvalidQuantityException("Quantity must be greater than zero.");
-        for (CartItem item : cart) {
-            if (item.getItem().getId() == id) {
-                item.setQuantity(quantity); System.out.println("Quantity updated."); return;
-            }
-        }
-        System.out.println("Item is not in the cart.");
+    if (quantity <= 0) {
+        throw new InvalidQuantityException("Quantity must be greater than zero.");
     }
+
+    CartItem item = findCartItemById(id);
+
+    if (item != null) {
+        item.setQuantity(quantity);
+        System.out.println("Quantity updated.");
+        return;
+    }
+
+    System.out.println("Item is not in the cart.");
+}
     public void showCart() {
-        if (cart.isEmpty()) { System.out.println("Your cart is empty."); return; }
-        System.out.println("\n------------- YOUR CART -------------");
-        for (CartItem item : cart)
-            System.out.printf("%-20s x %-3d Rs. %.2f%n", item.getItem().getName(),
-                    item.getQuantity(), item.getAmount());
-        System.out.printf("Total: Rs. %.2f%n", getTotal());
+    if (cart.isEmpty()) {
+        System.out.println("\n========== YOUR CART ==========");
+        System.out.println("Your cart is empty.");
+        System.out.println("===============================");
+        return;
     }
+
+    System.out.println("\n============== YOUR CART ==============");
+    System.out.printf("%-20s %-10s %-12s%n", "Item", "Quantity", "Amount");
+    System.out.println("---------------------------------------");
+
+    for (CartItem item : cart) {
+        System.out.printf("%-20s %-10d Rs. %-10.2f%n",
+                item.getItem().getName(),
+                item.getQuantity(),
+                item.getAmount());
+    }
+
+    System.out.println("---------------------------------------");
+    System.out.printf("Total Amount: Rs. %.2f%n", getTotal());
+    System.out.println("=======================================");
+}
     public double getTotal() {
         double total = 0;
         for (CartItem item : cart) total += item.getAmount();
@@ -53,4 +90,20 @@ public class CartService {
         return copy;
     }
     public void clearCart() { cart.clear(); }
+    public boolean isEmpty() {
+    return cart.isEmpty();
+    }
+    public int getItemCount() {
+    return cart.size();
+    }
+    public int getTotalQuantity() {
+    int count = 0;
+
+    for (CartItem item : cart) {
+        count += item.getQuantity();
+    }
+
+    return count;
+}
+
 }
